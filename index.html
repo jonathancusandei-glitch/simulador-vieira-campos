@@ -1,0 +1,1556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador Agente IA — Vieira Campos Advocacia & Consultoria Jurídica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0b111e;
+      --bg-card: #131c2e;
+      --bg-card-2: #19253c;
+      --gold: #d4af37;
+      --gold-light: #f3d266;
+      --wa-green: #00a884;
+      --wa-dark-header: #202c33;
+      --wa-chat-bg: #0b141a;
+      --wa-msg-in: #202c33;
+      --wa-msg-out: #005c4b;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.09);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top right, #17233b 0%, #090d16 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Header Executivo */
+    .top-bar {
+      background: rgba(19, 28, 46, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      z-index: 20;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #d4af37, #9a7b1c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      color: #090d16;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    .brand-title h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-pill {
+      background: rgba(0, 168, 132, 0.2);
+      border: 1px solid rgba(0, 168, 132, 0.5);
+      color: #34d399;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.5; }
+    }
+
+    .brand-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-config {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-config:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--gold);
+    }
+
+    /* Barra de Cenários Rápidos */
+    .scenarios-bar {
+      background: rgba(15, 23, 42, 0.75);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .scenarios-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold-light);
+      white-space: nowrap;
+      margin-right: 4px;
+    }
+
+    .scenario-btn {
+      background: linear-gradient(180deg, #1e293b 0%, #151e2e 100%);
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      color: #f8fafc;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .scenario-btn:hover {
+      border-color: var(--gold);
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, #26354d 0%, #1b263b 100%);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+    }
+
+    .scenario-btn.clear-btn {
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+      margin-left: auto;
+    }
+
+    /* Layout Principal */
+    .main-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      padding: 20px 24px;
+      max-width: 1500px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 1024px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Simulador WhatsApp */
+    .wa-container {
+      background: var(--wa-chat-bg);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 150px);
+      min-height: 580px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .wa-header {
+      background: var(--wa-dark-header);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .wa-contact {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .wa-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 2px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--gold);
+      font-size: 15px;
+      position: relative;
+    }
+
+    .wa-avatar::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 11px;
+      height: 11px;
+      background: #00a884;
+      border-radius: 50%;
+      border: 2px solid var(--wa-dark-header);
+    }
+
+    .wa-contact-info h3 {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: #e9edef;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .verified-badge {
+      color: #00a884;
+      font-size: 14px;
+    }
+
+    .wa-status {
+      font-size: 12px;
+      color: #00a884;
+      font-weight: 500;
+    }
+
+    .wa-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background-color: #0b141a;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+
+    .wa-date-badge {
+      align-self: center;
+      background: #182229;
+      color: #8696a0;
+      font-size: 11.5px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+
+    .msg-bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 13.8px;
+      line-height: 1.48;
+      position: relative;
+      animation: fadeIn 0.25s ease-out;
+      word-wrap: break-word;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mensagem do Cliente (Direita - Verde como quem testa ou Esquerda)
+       Aqui o cliente está mandando mensagem para o Escritório:
+       Cliente = Verde (Direita), IA do Escritório = Escura (Esquerda) com tag IA */
+    .msg-client {
+      align-self: flex-end;
+      background: var(--wa-msg-out);
+      color: #e9edef;
+      border-top-right-radius: 2px;
+    }
+
+    .msg-ai {
+      align-self: flex-start;
+      background: var(--wa-msg-in);
+      color: #e9edef;
+      border-top-left-radius: 2px;
+      border-left: 3px solid var(--gold);
+    }
+
+    .ai-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .msg-time {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, 0.55);
+      text-align: right;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    /* Player de Áudio Simulado */
+    .audio-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-top: 4px;
+      min-width: 240px;
+    }
+
+    .audio-play-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #00a884;
+      color: #fff;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .audio-waves {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex: 1;
+      height: 22px;
+    }
+
+    .wave-bar {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 2px;
+    }
+
+    .transcript-badge {
+      margin-top: 6px;
+      padding: 6px 9px;
+      background: rgba(15, 23, 42, 0.65);
+      border-left: 2px solid #38bdf8;
+      border-radius: 4px;
+      font-size: 11.5px;
+      color: #bae6fd;
+    }
+
+    /* Indicador Digitando */
+    .typing-indicator {
+      align-self: flex-start;
+      background: var(--wa-msg-in);
+      padding: 10px 16px;
+      border-radius: 12px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--gold-light);
+      border-left: 3px solid var(--gold);
+    }
+
+    .dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .dots span {
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+
+    .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* Barra de Input do WhatsApp */
+    .wa-input-bar {
+      background: var(--wa-dark-header);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .wa-input {
+      flex: 1;
+      background: #2a3942;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #e9edef;
+      padding: 11px 16px;
+      border-radius: 10px;
+      font-size: 13.8px;
+      outline: none;
+    }
+
+    .wa-input:focus {
+      border-color: var(--wa-green);
+    }
+
+    .wa-btn-mic, .wa-btn-send {
+      border: none;
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .wa-btn-mic {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .wa-btn-mic:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .wa-btn-send {
+      background: var(--wa-green);
+      color: #fff;
+    }
+
+    .wa-btn-send:hover {
+      background: #029072;
+    }
+
+    /* Painel Direito: CRM & Triagem em Tempo Real */
+    .crm-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      height: calc(100vh - 150px);
+      min-height: 580px;
+      overflow-y: auto;
+    }
+
+    .crm-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .crm-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .crm-card-header h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold-light);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .metric-box {
+      background: var(--bg-card-2);
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .metric-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .metric-val.green { color: #34d399; }
+    .metric-val.gold { color: var(--gold-light); }
+
+    .metric-lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* Ficha de Triagem */
+    .triage-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .triage-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card-2);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 3px solid var(--gold);
+      font-size: 13px;
+    }
+
+    .triage-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .triage-value {
+      color: #fff;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .badge-status {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .badge-qualified {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .summary-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px dashed rgba(212, 175, 55, 0.4);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12.8px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      margin-top: 6px;
+    }
+
+    /* Notificação que chega para o Advogado */
+    .lawyer-notif {
+      background: linear-gradient(135deg, rgba(0, 92, 75, 0.35), rgba(19, 28, 46, 0.9));
+      border: 1px solid rgba(0, 168, 132, 0.45);
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 12.8px;
+      line-height: 1.55;
+      color: #ecfdf5;
+    }
+
+    .lawyer-notif strong {
+      color: #34d399;
+    }
+
+    /* Modal de Personalização */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--gold);
+      border-radius: 14px;
+      max-width: 460px;
+      width: 100%;
+      padding: 24px;
+    }
+
+    .modal-box h3 {
+      font-size: 16px;
+      margin-bottom: 14px;
+      color: var(--gold-light);
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="brand-area">
+      <div class="brand-badge" id="logoInitials" ondblclick="openConfigModal()" title="Ambiente Exclusivo">VC</div>
+      <div class="brand-title">
+        <h1>
+          <span id="firmNameHeader">Vieira Campos Advocacia & Consultoria Jurídica</span>
+          <span class="live-pill"><span class="live-dot"></span> IA ATIVA 24/7</span>
+        </h1>
+        <p id="firmSubtitle">Ambiente de Demonstração Exclusivo • <span id="firmCityHeader">Mantena, MG</span> • Tel: (33) 98406-1142</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn-config" onclick="resetChat()" style="border-color: rgba(212, 175, 55, 0.45); color: var(--gold-light);">💬 Testar Nova Conversa do Zero</button>
+    </div>
+  </header>
+
+  <!-- Botões de Cenários de Demonstração -->
+  <div class="scenarios-bar">
+    <span class="scenarios-label">▶ TESTAR CENÁRIOS AO VIVO:</span>
+    <button class="scenario-btn" onclick="runScenario('previdenciario_audio')">
+      🎙️ 1. Cliente manda Áudio (INSS / Aposentadoria)
+    </button>
+    <button class="scenario-btn" onclick="runScenario('trabalhista_noite')">
+      🌙 2. Contato às 22h45 (Trabalhista Fora de Hora)
+    </button>
+    <button class="scenario-btn" onclick="runScenario('familia_preco')">
+      ⚖️ 3. Dúvida de Preço + Divórcio/Inventário
+    </button>
+    <button class="scenario-btn" onclick="runScenario('followup')">
+      🔄 4. Recuperação de Cliente no Vácuo (Follow-up)
+    </button>
+    <button class="scenario-btn clear-btn" onclick="resetChat()">
+      🗑️ Limpar Conversa
+    </button>
+  </div>
+
+  <!-- Grid Principal -->
+  <main class="main-grid">
+
+    <!-- Coluna Esquerda: Simulador de WhatsApp -->
+    <section class="wa-container">
+      <div class="wa-header">
+        <div class="wa-contact">
+          <div class="wa-avatar" id="waAvatar">VC</div>
+          <div class="wa-contact-info">
+            <h3>
+              <span id="waContactName">Vieira Campos Advocacia</span>
+              <span class="verified-badge" title="Conta Comercial Oficial">✔</span>
+            </h3>
+            <div class="wa-status" id="waStatusText">Assistente Jurídica IA • Online (Responde em 3s)</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: #8696a0;">WhatsApp Business API</div>
+      </div>
+
+      <div class="wa-messages" id="chatMessages">
+        <div class="wa-date-badge">🔒 As mensagens e áudios são processados instantaneamente pela Inteligência Artificial treinada para o escritório.</div>
+      </div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        <span id="typingLabel">IA da Vieira Campos está analisando e digitando</span>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+
+      <div class="wa-input-bar">
+        <button class="wa-btn-mic" onclick="sendSimulatedVoice()" title="Simular cliente enviando um áudio">
+          🎙️ Mandar Áudio
+        </button>
+        <input
+          type="text"
+          id="userInput"
+          class="wa-input"
+          placeholder="Digite como se fosse um cliente (ex: 'Meu benefício foi negado', 'Quanto custa a consulta?')..."
+          onkeydown="if(event.key === 'Enter') sendUserMessage()"
+        />
+        <button class="wa-btn-send" onclick="sendUserMessage()">
+          Enviar ➤
+        </button>
+      </div>
+    </section>
+
+    <!-- Coluna Direita: Painel de Inteligência e Triagem em Tempo Real -->
+    <aside class="crm-panel">
+
+      <!-- Card 1: Métricas -->
+      <div class="crm-card">
+        <div class="crm-card-header">
+          <h2>⚡ Performance do Agente de IA</h2>
+          <span style="font-size: 11px; color: var(--text-muted);">Tempo Real</span>
+        </div>
+        <div class="metrics-row">
+          <div class="metric-box">
+            <div class="metric-val green" id="metricTime">2.1s</div>
+            <div class="metric-lbl">Tempo de Resposta</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val gold">24h / 7d</div>
+            <div class="metric-lbl">Disponibilidade</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-val green" id="metricConv">+84%</div>
+            <div class="metric-lbl">Aproveitamento</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Ficha de Triagem Automática -->
+      <div class="crm-card">
+        <div class="crm-card-header">
+          <h2>📋 Triagem Jurídica Automática</h2>
+          <span class="badge-status badge-qualified" id="triageStatusBadge">Qualificando...</span>
+        </div>
+        <div class="triage-grid">
+          <div class="triage-item">
+            <span class="triage-label">Cliente Identificado:</span>
+            <span class="triage-value" id="triageClient">Carlos Eduardo Mendes</span>
+          </div>
+          <div class="triage-item">
+            <span class="triage-label">Área do Direito:</span>
+            <span class="triage-value" id="triageArea" style="color: var(--gold-light);">Direito Previdenciário (INSS)</span>
+          </div>
+          <div class="triage-item">
+            <span class="triage-label">Urgência / Potencial:</span>
+            <span class="triage-value" id="triageUrgency" style="color: #34d399;">Alta 🔥 (Pronto p/ Consulta)</span>
+          </div>
+          <div class="triage-item">
+            <span class="triage-label">Horário Pré-Agendado:</span>
+            <span class="triage-value" id="triageSchedule">Amanhã às 14:00 (Presencial)</span>
+          </div>
+        </div>
+        <div style="margin-top: 12px; font-size: 11.5px; color: var(--text-muted); font-weight: 600;">
+          🧠 RESUMO EXTRAÍDO PELA IA (ÁUDIO + TEXTO):
+        </div>
+        <div class="summary-box" id="triageSummary">
+          Cliente relatou por áudio que trabalhou 15 anos e teve o pedido de auxílio-doença/aposentadoria negado pelo INSS há 20 dias. Possui laudo médico atualizado e carta de indeferimento. Deseja atendimento em Mantena.
+        </div>
+      </div>
+
+      <!-- Card 3: Como chega no WhatsApp do Advogado -->
+      <div class="crm-card">
+        <div class="crm-card-header">
+          <h2>📲 Resumo Enviado ao Advogado(a)</h2>
+          <span style="font-size: 11px; color: #34d399;">Automático</span>
+        </div>
+        <div class="lawyer-notif" id="lawyerNotification">
+          🔔 <strong>NOVO CLIENTE QUALIFICADO — VIEIRA CAMPOS ADVOCACIA</strong><br><br>
+          👤 <strong>Nome:</strong> Carlos Eduardo Mendes<br>
+          ⚖️ <strong>Demanda:</strong> Previdenciário — Reversão de Benefício Negado no INSS<br>
+          📄 <strong>Documentação:</strong> Confirmou possuir laudo médico + carta de negativa<br>
+          📅 <strong>Consulta Agendada:</strong> Amanhã, às 14h00 (Escritório em Mantena/MG)<br><br>
+          <em>✅ A IA já coletou os dados iniciais e confirmou a presença do cliente.</em>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Modal para Trocar Empresa rapidamente -->
+  <div class="modal-overlay" id="configModal">
+    <div class="modal-box">
+      <h3>⚙️ Personalizar Simulador para Outro Cliente</h3>
+      <div class="form-group">
+        <label>Nome da Empresa / Escritório / Clínica:</label>
+        <input type="text" id="cfgName" value="Vieira Campos Advocacia" />
+      </div>
+      <div class="form-group">
+        <label>Cidade / UF:</label>
+        <input type="text" id="cfgCity" value="Mantena, MG" />
+      </div>
+      <div class="form-group">
+        <label>Segmento:</label>
+        <select id="cfgSegment">
+          <option value="advocacia" selected>Escritório de Advocacia</option>
+          <option value="odontologia">Clínica Odontológica</option>
+          <option value="estetica">Clínica de Estética</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-config" onclick="closeConfigModal()">Cancelar</button>
+        <button class="wa-btn-send" onclick="applyConfig()">Aplicar no Simulador</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let config = {
+      firmName: "Vieira Campos Advocacia",
+      city: "Mantena, MG",
+      segment: "advocacia"
+    };
+
+    const chatMessages = document.getElementById("chatMessages");
+    const typingIndicator = document.getElementById("typingIndicator");
+    const typingLabel = document.getElementById("typingLabel");
+
+    function getInitials(name) {
+      const parts = name.trim().split(" ");
+      if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+      return name.slice(0, 2).toUpperCase();
+    }
+
+    function openConfigModal() {
+      document.getElementById("configModal").style.display = "flex";
+    }
+
+    function closeConfigModal() {
+      document.getElementById("configModal").style.display = "none";
+    }
+
+    function applyConfig() {
+      const name = document.getElementById("cfgName").value.trim() || "Vieira Campos Advocacia";
+      const city = document.getElementById("cfgCity").value.trim() || "Mantena, MG";
+      const seg = document.getElementById("cfgSegment").value;
+
+      config = { firmName: name, city: city, segment: seg };
+      const initials = getInitials(name);
+
+      document.getElementById("logoInitials").textContent = initials;
+      document.getElementById("waAvatar").textContent = initials;
+      document.getElementById("firmNameHeader").textContent = name;
+      document.getElementById("waContactName").textContent = name;
+      document.getElementById("firmCityHeader").textContent = city;
+
+      closeConfigModal();
+      runScenario("previdenciario_audio");
+    }
+
+    // Estado da conversa ao vivo (memória multi-etapas para nunca repetir respostas)
+    let liveState = {
+      step: 0,
+      clientName: null,
+      areaKey: null,
+      areaLabel: null,
+      caseDetails: [],
+      modality: null,
+      scheduledSlot: null,
+      lastBotIntent: null, // 'ask_name_and_area', 'ask_name', 'ask_area', 'ask_triage', 'ask_schedule', 'confirmed'
+      priceAsked: false
+    };
+
+    function resetLiveState() {
+      liveState = {
+        step: 0,
+        clientName: null,
+        areaKey: null,
+        areaLabel: null,
+        caseDetails: [],
+        modality: null,
+        scheduledSlot: null,
+        lastBotIntent: null,
+        priceAsked: false
+      };
+    }
+
+    function resetChat() {
+      resetLiveState();
+      chatMessages.innerHTML = `<div class="wa-date-badge">🔒 Simulador pronto. Clique em um dos cenários acima ou digite qualquer mensagem abaixo para conversar ao vivo com a IA.</div>`;
+    }
+
+    function addClientMessage(text, time = "Agora", isAudio = false, audioDuration = "0:18") {
+      const div = document.createElement("div");
+      div.className = "msg-bubble msg-client";
+
+      if (isAudio) {
+        div.innerHTML = `
+          <div style="font-size:11px; color:#a7f3d0; font-weight:600; margin-bottom:2px;">🎙️ Áudio enviado pelo cliente</div>
+          <div class="audio-box">
+            <button class="audio-play-btn" onclick="speakText('${text.replace(/'/g, "\\'")}')">▶</button>
+            <div class="audio-waves">
+              <div class="wave-bar" style="height:40%"></div>
+              <div class="wave-bar" style="height:85%"></div>
+              <div class="wave-bar" style="height:60%"></div>
+              <div class="wave-bar" style="height:95%"></div>
+              <div class="wave-bar" style="height:50%"></div>
+              <div class="wave-bar" style="height:75%"></div>
+              <div class="wave-bar" style="height:100%"></div>
+              <div class="wave-bar" style="height:45%"></div>
+              <div class="wave-bar" style="height:80%"></div>
+              <div class="wave-bar" style="height:65%"></div>
+              <div class="wave-bar" style="height:35%"></div>
+            </div>
+            <span style="font-size:11px; color:#e2e8f0;">${audioDuration}</span>
+          </div>
+          <div class="transcript-badge">
+            ✨ <strong>IA escutou e transcreveu em 1,1s:</strong><br>"${text}"
+          </div>
+          <div class="msg-time">${time} ✔✔</div>
+        `;
+      } else {
+        div.innerHTML = `
+          <div>${text}</div>
+          <div class="msg-time">${time} ✔✔</div>
+        `;
+      }
+
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addAIMessage(htmlText, time = "Agora") {
+      const div = document.createElement("div");
+      div.className = "msg-bubble msg-ai";
+      div.innerHTML = `
+        <div class="ai-tag">🤖 Assistente IA • ${config.firmName}</div>
+        <div>${htmlText}</div>
+        <div class="msg-time">${time}</div>
+      `;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function updateCRM(client, area, urgency, schedule, summary, badgeText = "Qualificado ✅") {
+      document.getElementById("triageClient").textContent = client;
+      document.getElementById("triageArea").textContent = area;
+      document.getElementById("triageUrgency").textContent = urgency;
+      document.getElementById("triageSchedule").textContent = schedule;
+      document.getElementById("triageSummary").textContent = summary;
+      document.getElementById("triageStatusBadge").textContent = badgeText;
+
+      document.getElementById("lawyerNotification").innerHTML = `
+        🔔 <strong>NOVO CLIENTE QUALIFICADO — ${config.firmName.toUpperCase()}</strong><br><br>
+        👤 <strong>Cliente:</strong> ${client}<br>
+        ⚖️ <strong>Área / Demanda:</strong> ${area}<br>
+        🔥 <strong>Prioridade:</strong> ${urgency}<br>
+        📅 <strong>Agendamento:</strong> ${schedule}<br><br>
+        📝 <strong>Resumo IA:</strong> ${summary}
+      `;
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'pt-BR';
+        utter.rate = 1.05;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+
+    let scenarioTimeouts = [];
+    function clearScenarioTimeouts() {
+      scenarioTimeouts.forEach(t => clearTimeout(t));
+      scenarioTimeouts = [];
+      typingIndicator.style.display = "none";
+    }
+
+    function runScenario(type) {
+      clearScenarioTimeouts();
+      resetChat();
+
+      if (type === "previdenciario_audio") {
+        addClientMessage(
+          "Oi doutor, bom dia! Trabalhei 15 anos na lavoura e agora estou com um problema sério na coluna. Dei entrada no auxílio-doença no INSS mas foi negado ontem. Vocês aqui em " + config.city + " atendem esse tipo de caso?",
+          "10:12",
+          true,
+          "0:19"
+        );
+
+        typingLabel.textContent = `IA da ${config.firmName} ouviu o áudio e está elaborando a resposta...`;
+        typingIndicator.style.display = "flex";
+
+        scenarioTimeouts.push(setTimeout(() => {
+          typingIndicator.style.display = "none";
+          addAIMessage(
+            `Olá! Bom dia, tudo bem? Seja muito bem-vindo(a) ao atendimento da <strong>${config.firmName}</strong>.<br><br>` +
+            `Acabei de ouvir o seu áudio! Sim, nós atuamos fortemente com <strong>Direito Previdenciário (INSS)</strong> aqui em ${config.city}, especialmente para reverter benefícios negados de auxílio-doença e aposentadoria rural.<br><br>` +
+            `Para eu já adiantar sua pasta para o(a) advogado(a) especialista, me confirme apenas dois detalhes rápidos:<br>` +
+            `1️⃣ Você tem em mãos a carta de negativa do INSS e os laudos médicos recentes da coluna?<br>` +
+            `2️⃣ Qual é o seu nome completo?`,
+            "10:12"
+          );
+        }, 1600));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          addClientMessage("Meu nome é Carlos Eduardo Mendes. Tenho sim, peguei o laudo novo essa semana e o papel do INSS.", "10:13");
+          typingLabel.textContent = `IA da ${config.firmName} está verificando a agenda...`;
+          typingIndicator.style.display = "flex";
+        }, 3800));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          typingIndicator.style.display = "none";
+          addAIMessage(
+            `Perfeito, Sr. Carlos! Como o benefício foi negado ontem, estamos dentro do melhor prazo para entrar com o recurso ou ação judicial.<br><br>` +
+            `Temos horário disponível na agenda do escritório para analisar seus documentos:<br>` +
+            `📅 <strong>Amanhã às 14h00</strong> ou <strong>Quinta-feira às 09h30</strong>.<br><br>` +
+            `Qual desses horários fica melhor para o senhor vir aqui no escritório (ou fazer por chamada de vídeo)?`,
+            "10:13"
+          );
+        }, 5600));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          addClientMessage("Amanhã às 14h pra mim tá ótimo, vou presencialmente.", "10:14");
+          typingIndicator.style.display = "flex";
+        }, 7400));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          typingIndicator.style.display = "none";
+          addAIMessage(
+            `Combinado, Sr. Carlos! ✅ Seu atendimento presencial na <strong>${config.firmName}</strong> está confirmado para <strong>amanhã às 14h00</strong>.<br><br>` +
+            `Lembre-se de trazer seu RG, CPF, a carta do INSS e os laudos médicos. Já enviei o resumo do seu caso diretamente para o(a) advogado(a). Até amanhã!`,
+            "10:14"
+          );
+          updateCRM(
+            "Carlos Eduardo Mendes",
+            "Direito Previdenciário (Benefício Negado INSS)",
+            "Alta 🔥 (Com Laudo + Negativa Recente)",
+            "Amanhã às 14:00 (Presencial)",
+            "Cliente ouviu/enviou áudio relatando 15 anos de atividade rural e problema na coluna. Benefício negado ontem no INSS. Possui laudo médico atualizado e carta de indeferimento. Agendado para amanhã às 14h."
+          );
+        }, 9000));
+      }
+
+      else if (type === "trabalhista_noite") {
+        addClientMessage("Boa noite, trabalhei 4 anos numa empresa aqui da região sem carteira assinada e fui demitido hoje sem receber nada. Vocês atendem causa trabalhista?", "22:45");
+        typingLabel.textContent = `Atendimento Noturno 24h: IA respondendo em 2 segundos...`;
+        typingIndicator.style.display = "flex";
+
+        scenarioTimeouts.push(setTimeout(() => {
+          typingIndicator.style.display = "none";
+          addAIMessage(
+            `Olá, boa noite! Seja bem-vindo(a) à <strong>${config.firmName}</strong>.<br><br>` +
+            `Mesmo fora do horário comercial, estou aqui para te ajudar imediatamente! Sim, somos especialistas em <strong>Direito Trabalhista</strong>.<br><br>` +
+            `Trabalhar 4 anos sem registro e sair sem acerto gera direito ao reconhecimento do vínculo, FGTS, férias, 13º, aviso prévio e multas rescisórias.<br><br>` +
+            `Como a demissão ocorreu hoje, é fundamental calcularmos seus direitos o quanto antes. Qual é o seu nome e se você possui provas (como comprovantes de Pix, mensagens ou testemunhas)?`,
+            "22:45"
+          );
+        }, 1500));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          addClientMessage("Sou a Fernanda Lima. Tenho todos os comprovantes de pagamento no banco e conversas no WhatsApp.", "22:46");
+          typingIndicator.style.display = "flex";
+        }, 3600));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          typingIndicator.style.display = "none";
+          addAIMessage(
+            `Excelente, Fernanda! Com os comprovantes bancários e conversas de WhatsApp, a prova do vínculo fica muito sólida.<br><br>` +
+            `Já deixei pré-reservado um horário prioritário amanhã às <strong>09h30 da manhã</strong> para nossa equipe realizar o cálculo do seu acerto. Posso confirmar para você?`,
+            "22:46"
+          );
+          updateCRM(
+            "Fernanda Lima",
+            "Direito Trabalhista (4 anos sem registro + Rescisão)",
+            "Altíssima 🔥 (Atendida às 22h45)",
+            "Amanhã às 09:30",
+            "Lead entrou às 22h45 (fora do expediente). Demitida hoje após 4 anos sem CTPS assinada. Possui comprovantes bancários e conversas de WhatsApp. Sem a IA, teria procurado outro escritório pela manhã."
+          );
+        }, 5400));
+      }
+
+      else if (type === "familia_preco") {
+        addClientMessage("Oi, quero fazer um divórcio e partilha de dois imóveis. Quanto vocês cobram pra fazer?", "15:20");
+        typingIndicator.style.display = "flex";
+
+        scenarioTimeouts.push(setTimeout(() => {
+          typingIndicator.style.display = "none";
+          addAIMessage(
+            `Olá! Seja muito bem-vindo(a) à <strong>${config.firmName}</strong>.<br><br>` +
+            `Atuamos com total sigilo e agilidade em processos de <strong>Direito de Família e Partilha de Bens</strong> em ${config.city}.<br><br>` +
+            `Sobre os honorários: seguindo as normas da OAB e para passar um valor justo e exato, nós avaliamos primeiro se o divórcio será <strong>consensual (amigável em cartório)</strong> — que é muito mais rápido e econômico — ou litigioso, além da documentação dos imóveis.<br><br>` +
+            `No seu caso, ambas as partes estão de acordo com a separação e a divisão dos dois imóveis, ou há divergência?`,
+            "15:20"
+          );
+        }, 1500));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          addClientMessage("Estamos de acordo sim, não temos filhos menores. Meu nome é Roberto.", "15:21");
+          typingIndicator.style.display = "flex";
+        }, 3500));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          typingIndicator.style.display = "none";
+          addAIMessage(
+            `Que ótima notícia, Sr. Roberto! Sendo consensual e sem filhos menores, conseguimos conduzir de forma <strong>extrajudicial (direto em cartório)</strong>, que fica pronto em poucos dias!<br><br>` +
+            `Posso agendar uma reunião rápida de 20 minutos hoje às 17h00 ou amanhã às 10h00 com o(a) advogado(a) para lhe apresentar a proposta de honorários e a lista de documentos?`,
+            "15:21"
+          );
+          updateCRM(
+            "Roberto (Divórcio Extrajudicial)",
+            "Direito de Família e Sucessões (Partilha de 2 Imóveis)",
+            "Alta 💎 (Alto Ticket - Extrajudicial)",
+            "Hoje às 17:00",
+            "Cliente perguntou preço direto. IA contornou a objeção com ética da OAB, qualificou que é divórcio consensual sem filhos menores com partilha de 2 imóveis e converteu em reunião."
+          );
+        }, 5200));
+      }
+
+      else if (type === "followup") {
+        addClientMessage("Olá, gostaria de saber sobre revisão de contrato bancário.", "11:00");
+        addAIMessage(
+          `Olá! Tudo bem? Aqui é a assistente virtual da <strong>${config.firmName}</strong>. Atuamos sim com revisão de contratos e juros abusivos! Trata-se de financiamento de veículo, empréstimo ou dívida empresarial?`,
+          "11:00"
+        );
+
+        scenarioTimeouts.push(setTimeout(() => {
+          const badge = document.createElement("div");
+          badge.className = "wa-date-badge";
+          badge.innerHTML = "⏳ Cliente visualizou e não respondeu por 2 horas... IA aciona Follow-up Automático:";
+          chatMessages.appendChild(badge);
+
+          addAIMessage(
+            `Oi! Passando rapidinho porque sei que a rotina é corrida 😊<br><br>` +
+            `Você ainda precisa de ajuda com a análise do seu contrato bancário? Se preferir, pode me mandar um <strong>áudio rápido</strong> explicando ou uma foto do contrato que já deixo na mesa do(a) advogado(a) para você!`,
+            "13:05"
+          );
+        }, 1200));
+
+        scenarioTimeouts.push(setTimeout(() => {
+          addClientMessage("Opa, desculpa a correria! É financiamento de uma caminhonete que as parcelas dobraram. Sou o Marcos.", "13:07");
+          updateCRM(
+            "Marcos (Recuperado por Follow-up)",
+            "Direito Bancário (Revisão de Financiamento de Veículo)",
+            "Recuperado pelo Follow-up Automático 🔄",
+            "Quinta-feira às 15:00",
+            "Cliente havia parado de responder às 11h. O Follow-up automático da IA às 13h05 reativou a conversa e resgatou o contrato!"
+          );
+        }, 3200));
+      }
+    }
+
+    // Funções auxiliares de inteligência e tolerância a erros de digitação
+    function normalizeText(str) {
+      return str
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+    }
+
+    function detectLegalArea(norm) {
+      if (/(divor|separ|casam|ex-marid|ex-espos|uniao estavel|pensao|pensa|alimen|guarda|visita|inventar|heranc|partilh|famil|testament)/.test(norm)) {
+        return {
+          key: "familia",
+          label: "Direito de Família e Sucessões",
+          triageQuestion: "Para eu adiantar sua ficha para o(a) advogado(a) especialista: no seu caso, as partes estão de acordo (forma amigável/consensual) ou há divergência, filhos menores ou bens para partilhar?"
+        };
+      }
+      if (/(inss|aposen|auxil|benefic|loas|bpc|peric|encost|previd|rural|lavour|roca|idade|invalidez|pensao por morte|meu inss)/.test(norm)) {
+        return {
+          key: "inss",
+          label: "Direito Previdenciário (INSS)",
+          triageQuestion: "Para nossa análise previdenciária: você já chegou a fazer o pedido no INSS e teve negativa, ou deseja dar entrada pela primeira vez? Possui laudos ou documentos?"
+        };
+      }
+      if (/(trabalh|demit|demiss|patra|carteir|ctps|acerto|rescis|fgts|hora extra|insalub|periculos|justa causa|firma|empregad|assedio|acidente de trabalho)/.test(norm)) {
+        return {
+          key: "trabalhista",
+          label: "Direito Trabalhista",
+          triageQuestion: "Em causas trabalhistas, cada detalhe faz diferença no cálculo. Quanto tempo você trabalhou na empresa, tinha carteira assinada e há quanto tempo saiu?"
+        };
+      }
+      if (/(banco|juro|financ|emprest|divid|spc|serasa|nome sujo|negativ|cobran|golpe|pix|fraude|consumid|indeniz|dano|voo|companhia|plano de saude|hospital|medico|carro|batid|acident|contrato)/.test(norm)) {
+        return {
+          key: "civel",
+          label: "Direito Cível, Consumidor e Bancário",
+          triageQuestion: "Entendi! Para avaliarmos a viabilidade e o pedido de indenização ou revisão: você já possui comprovantes, prints ou o contrato referente a essa situação?"
+        };
+      }
+      if (/(imovel|terreno|lote|casa|usucap|aluguel|despej|inquilin|escritur|posse|invad|vizinh|compra e venda|itbi|cartorio)/.test(norm)) {
+        return {
+          key: "imobiliario",
+          label: "Direito Imobiliário e Regularização",
+          triageQuestion: "Certo! Sobre o imóvel ou terreno: existe contrato de compra e venda/escritura ou trata-se de posse/regularização?"
+        };
+      }
+      if (/(crime|criminal|penal|delegac|preso|prisao|boletim|ocorrenc|audienc|intima|processo criminal|defesa|advogado criminal)/.test(norm)) {
+        return {
+          key: "criminal",
+          label: "Direito Criminal / Defesa Penal",
+          triageQuestion: "Compreendo a urgência e tratamos com sigilo absoluto. Já houve intimação, boletim de ocorrência ou audiência marcada?"
+        };
+      }
+      return null;
+    }
+
+    function detectModality(norm) {
+      if (/(presencial|escritorio|pessoalmente|ir ai|em mantena|no local)/.test(norm)) {
+        return `Presencial (${config.city})`;
+      }
+      if (/(online|on-line|video|chamada|whatsapp|distancia|longe|virtual|remoto)/.test(norm)) {
+        return "Online (Chamada de Vídeo / WhatsApp)";
+      }
+      return null;
+    }
+
+    function detectScheduleChoice(norm) {
+      if (/(amanha|14h|14:00|duas horas|tarde)/.test(norm)) {
+        return "Amanhã às 14h00";
+      }
+      if (/(quinta|09h|9h|09:30|9:30|manha|cedo)/.test(norm)) {
+        return "Quinta-feira às 09h30";
+      }
+      if (/(hoje|17h|17:00|16h|15h|10h|sexta|segunda|terca|quarta)/.test(norm)) {
+        return "Horário solicitado pelo cliente (" + norm.slice(0, 25) + ")";
+      }
+      return null;
+    }
+
+    function extractCandidateName(rawText, norm) {
+      // Remove prefixos comuns como "meu nome é", "sou o", "aqui é a"
+      let cleaned = rawText
+        .replace(/^(oi|ola|olá|bom dia|boa tarde|boa noite)[,\s!]*/i, "")
+        .replace(/^(meu nome e|meu nome é|me chamo|sou o|sou a|aqui e o|aqui é o|aqui é a|eu sou o|eu sou a|nome:?)\s+/i, "")
+        .replace(/\b(presencial|online|on-line|por video|por vídeo|em mantena|amanha|amanhã)\b/gi, "")
+        .replace(/[.,!?]/g, "")
+        .trim();
+
+      if (!cleaned) return null;
+      const words = cleaned.split(/\s+/);
+      // Palavras que NÃO são nomes próprios isolados
+      const nonNames = /^(oi|ola|bom|boa|dia|tarde|noite|sim|nao|não|ok|quero|preciso|gostaria|divorcio|divordio|inss|aposentadoria|trabalhista|advogado|valor|preco|preço|quanto|custa|cobra|ajuda|duvida|dúvida|amigavel|consensual|litigioso|tenho|filhos|casado|separado|demitido|banco|contrato|amanha|hoje|tarde|manha|presencial|online)$/i;
+      if (words.length >= 1 && words.length <= 3 && !nonNames.test(words[0])) {
+        // Capitaliza cada palavra do nome
+        return words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+      }
+      return null;
+    }
+
+    // Enviar mensagem livre digitada pelo usuário (Motor Conversacional Multi-Etapas)
+    function sendUserMessage() {
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Se estava mostrando um cenário pronto e a pessoa começou a digitar um teste próprio, limpa os balões do cenário anterior na 1ª mensagem
+      clearScenarioTimeouts();
+      if (liveState.step === 0) {
+        chatMessages.innerHTML = `<div class="wa-date-badge">🟢 Atendimento Ao Vivo Iniciado — Simulador Exclusivo ${config.firmName}</div>`;
+      }
+      liveState.step++;
+      addClientMessage(text, "Agora");
+      input.value = "";
+
+      typingLabel.textContent = `IA da ${config.firmName} está analisando e digitando...`;
+      typingIndicator.style.display = "flex";
+
+      setTimeout(() => {
+        typingIndicator.style.display = "none";
+        const norm = normalizeText(text);
+
+        // 1. Detecta entidades presentes na mensagem atual
+        const detectedArea = detectLegalArea(norm);
+        const detectedMod = detectModality(norm);
+        const detectedSlot = detectScheduleChoice(norm);
+        const isPriceQuestion = /(preco|valor|quanto custa|quanto cobra|honorario|consulta paga|cobram)/.test(norm);
+        const isGreetingOnly = /^(oi|ola|bom dia|boa tarde|boa noite|opa|tudo bem|tem alguem ai)[\s!?.,]*$/.test(norm);
+        const isAffirmative = /^(sim|pode|pode ser|claro|com certeza|ok|combinado|fechado|isso|exato|confirmo|quero|perfeito|ta otimo|tá ótimo)\b/.test(norm);
+
+        if (detectedArea && !liveState.areaKey) {
+          liveState.areaKey = detectedArea.key;
+          liveState.areaLabel = detectedArea.label;
+          liveState.triageQuestion = detectedArea.triageQuestion;
+        }
+        if (detectedMod) {
+          liveState.modality = detectedMod;
+        }
+        if (detectedSlot) {
+          liveState.scheduledSlot = detectedSlot;
+        }
+
+        // Tenta extrair nome quando esperado ou quando a frase tem formato "Meu nome é X" / nome curto
+        const explicitNameMatch = text.match(/(?:meu nome [eé]|me chamo|sou o|sou a|aqui [eé] o|aqui [eé] a)\s+([A-Za-zÀ-ÿ]+(?:\s+[A-Za-zÀ-ÿ]+){0,2})/i);
+        if (explicitNameMatch && !liveState.clientName) {
+          liveState.clientName = explicitNameMatch[1].replace(/\b(presencial|online)\b/gi, "").trim();
+        } else if (!liveState.clientName && !detectedArea && !isPriceQuestion && !isGreetingOnly) {
+          if (liveState.lastBotIntent === "ask_name" || liveState.lastBotIntent === "ask_name_and_area" || liveState.lastBotIntent === "ask_name_and_triage" || norm.split(/\s+/).length <= 3) {
+            const candidate = extractCandidateName(text, norm);
+            if (candidate) {
+              liveState.clientName = candidate;
+            }
+          }
+        }
+
+        const nameCall = liveState.clientName ? `, <strong>${liveState.clientName}</strong>` : "";
+        let reply = "";
+        let badge = "Em Triagem IA 🤖";
+        const isAddressQuestion = /(endereco|onde fica|localiza|rua|bairro|como chegar)/.test(norm);
+        const isDocsQuestion = /(documento|levar o que|precisa levar|papel|papeis|rg|cpf)/.test(norm);
+        const isThanks = /^(obrigad|valeu|ate amanha|ate la|tchau|agradec|show|beleza|top)\b/.test(norm);
+
+        // 2. Perguntas de Endereço, Documentos ou Agradecimento Pós-Agendamento
+        if (isAddressQuestion) {
+          reply = `Nosso escritório da <strong>${config.firmName}</strong> fica localizado em <strong>${config.city}</strong> (região central, de fácil acesso)! 📍<br><br>` +
+                  (liveState.scheduledSlot
+                    ? `Assim que confirmarmos seu atendimento para <strong>${liveState.scheduledSlot}</strong>, já te envio a localização fixa do Google Maps por aqui!`
+                    : `Você prefere agendar uma visita presencial aqui no escritório ou atendimento online por vídeo?`);
+        }
+        else if (isDocsQuestion) {
+          reply = `Para o atendimento na <strong>${config.firmName}</strong>${nameCall}, o ideal é ter em mãos seu <strong>RG, CPF, comprovante de residência</strong> e os documentos ligados ao caso (contratos, certidões, laudos ou prints).<br><br>` +
+                  (liveState.scheduledSlot
+                    ? `Se quiser, você já pode até mandar uma foto deles por aqui no WhatsApp antes do nosso horário (<strong>${liveState.scheduledSlot}</strong>)!`
+                    : `Qual horário fica melhor para deixarmos sua consulta reservada: <strong>Amanhã às 14h00</strong> ou <strong>Quinta-feira às 09h30</strong>?`);
+          if (!liveState.scheduledSlot) liveState.lastBotIntent = "ask_schedule";
+        }
+        else if (liveState.lastBotIntent === "confirmed") {
+          badge = "Agendado & Confirmado ✅";
+          if (isThanks || isAffirmative) {
+            reply = `Por nada${nameCall}! 😊 A equipe da <strong>${config.firmName}</strong> estará te aguardando (${liveState.scheduledSlot}). Qualquer dúvida até lá, é só chamar por aqui. Tenha um excelente dia! ⚖️`;
+          } else {
+            liveState.caseDetails.push(text);
+            reply = `Perfeito${nameCall}! Já adicionei também essa observação (<em>"${text}"</em>) direto no resumo enviado ao advogado para o seu atendimento de <strong>${liveState.scheduledSlot}</strong>. Precisa de mais alguma informação?`;
+          }
+        }
+        // 3. Se perguntou preço em qualquer momento
+        else if (isPriceQuestion) {
+          liveState.priceAsked = true;
+          if (!liveState.areaKey) {
+            reply = `Olá${nameCall}! Na <strong>${config.firmName}</strong>, nós seguimos a tabela ética da OAB e sempre avaliamos os detalhes do seu caso primeiro para passar o valor mais justo e seguro.<br><br>Me conte rapidinho: qual é a situação que você precisa resolver hoje (ex: <strong>Divórcio/Família, INSS, Trabalhista ou Contratos</strong>) e qual é o seu nome?`;
+            liveState.lastBotIntent = "ask_name_and_area";
+          } else {
+            reply = `Excelente pergunta${nameCall}! Para casos de <strong>${liveState.areaLabel}</strong>, os honorários variam conforme a complexidade (por exemplo, se for consensual/extrajudicial é muito mais rápido e econômico).<br><br>${liveState.triageQuestion || "Podemos agendar uma conversa rápida com o(a) advogado(a) para analisar seu caso e te apresentar a condição exata?"}`;
+            liveState.lastBotIntent = "ask_triage";
+          }
+        }
+
+        // 3. Fluxo de Agendamento (quando já estava escolhendo horário ou já passou pela triagem)
+        else if (liveState.lastBotIntent === "ask_schedule" || (liveState.caseDetails.length > 0 && (detectedSlot || detectedMod || isAffirmative))) {
+          const finalSlot = liveState.scheduledSlot || "Amanhã às 14h00";
+          const finalMod = liveState.modality || `Presencial em ${config.city}`;
+          liveState.scheduledSlot = `${finalSlot} (${finalMod})`;
+          liveState.lastBotIntent = "confirmed";
+          badge = "Agendado & Qualificado ✅";
+
+          reply = `Perfeito${nameCall}! ✅ Seu atendimento está <strong>pré-confirmado para ${finalSlot} — ${finalMod}</strong> aqui na <strong>${config.firmName}</strong>.<br><br>` +
+                  `Já enviei a ficha completa da sua triagem de <strong>${liveState.areaLabel || "Consultoria Jurídica"}</strong> direto para o WhatsApp do(a) advogado(a) especialista. Se quiser adiantar foto de algum documento por aqui, fique à vontade. Até lá!`;
+        }
+
+        // 4. Quando o bot acabou de fazer a pergunta técnica de triagem (ex: se o divórcio é amigável, se tem filhos, etc.)
+        else if (liveState.lastBotIntent === "ask_triage") {
+          liveState.caseDetails.push(text);
+          const modText = liveState.modality ? ` (${liveState.modality})` : "";
+          liveState.lastBotIntent = "ask_schedule";
+          badge = "Qualificado • Escolhendo Horário 📅";
+
+          reply = `Perfeito${nameCall}! Já anotei esses detalhes na sua ficha jurídica (<em>"${text}"</em>). Com essas informações o(a) advogado(a) já vai para a reunião com a estratégia pronta!<br><br>` +
+                  `Temos dois horários disponíveis na agenda da <strong>${config.firmName}</strong>:<br>` +
+                  `📅 <strong>Amanhã às 14h00</strong> ou <strong>Quinta-feira às 09h30</strong>.<br><br>` +
+                  `Qual desses horários fica melhor para você${liveState.modality ? "" : ", e prefere atendimento <strong>presencial em " + config.city + "</strong> ou <strong>online por vídeo</strong>"}?`;
+        }
+
+        // 5. Quando já temos TANTO o nome QUANTO a área jurídica (ex: digitou "divordio" e depois "jonathan", ou vice-versa)
+        else if (liveState.areaKey && liveState.clientName) {
+          // Verifica se na mesma mensagem do nome ele já deu detalhes do caso
+          const wordCount = norm.split(/\s+/).length;
+          if (liveState.lastBotIntent === "ask_name_and_triage" && wordCount > 4) {
+            liveState.caseDetails.push(text);
+            liveState.lastBotIntent = "ask_schedule";
+            badge = "Qualificado • Escolhendo Horário 📅";
+            reply = `Muito prazer, <strong>${liveState.clientName}</strong>! Já registrei seu relato na pasta de <strong>${liveState.areaLabel}</strong>.<br><br>` +
+                    `Para o(a) advogado(a) analisar seu caso de perto, você prefere agendar para <strong>Amanhã às 14h00</strong> ou <strong>Quinta-feira às 09h30</strong> (presencial em ${config.city} ou online)?`;
+          } else {
+            liveState.lastBotIntent = "ask_triage";
+            badge = "Triagem Jurídica em Andamento ⚖️";
+            reply = `Muito prazer, <strong>${liveState.clientName}</strong>! Já vinculei seu atendimento ao setor de <strong>${liveState.areaLabel}</strong> da <strong>${config.firmName}</strong>${liveState.modality ? " na modalidade <strong>" + liveState.modality + "</strong>" : ""}.<br><br>` +
+                    `${liveState.triageQuestion}`;
+          }
+        }
+
+        // 6. Temos a Área Jurídica (ex: digitou "divordio"), mas AINDA NÃO temos o nome do cliente
+        else if (liveState.areaKey && !liveState.clientName) {
+          liveState.lastBotIntent = "ask_name_and_triage";
+          badge = "Área Identificada • Coletando Nome";
+          reply = `Olá! Seja muito bem-vindo(a) ao atendimento inteligente da <strong>${config.firmName}</strong> em ${config.city}.<br><br>` +
+                  `Nós somos especialistas em <strong>${liveState.areaLabel}</strong>! Para eu abrir sua pasta de atendimento prioritário, <strong>qual é o seu nome</strong>?`;
+        }
+
+        // 7. Temos o Nome do cliente (ex: digitou "oi" -> "jonathan"), mas AINDA NÃO sabemos a área jurídica
+        else if (liveState.clientName && !liveState.areaKey) {
+          // Se ele já respondeu à pergunta de área com algo livre (ex: "bati o carro", "problema na herança"), classifica como demanda jurídica específica
+          if (liveState.lastBotIntent === "ask_area" && norm.split(/\s+/).length >= 2) {
+            liveState.areaKey = "civel";
+            liveState.areaLabel = "Consultoria Jurídica (" + text.slice(0, 28) + ")";
+            liveState.caseDetails.push(text);
+            liveState.lastBotIntent = "ask_schedule";
+            badge = "Qualificado • Escolhendo Horário 📅";
+            reply = `Compreendo perfeitamente, <strong>${liveState.clientName}</strong>! Já registrei sua demanda (<em>"${text}"</em>) para nossa equipe jurídica.<br><br>` +
+                    `Conseguimos te atender ainda esta semana! Prefere agendar para <strong>Amanhã às 14h00</strong> ou <strong>Quinta-feira às 09h30</strong>, e prefere <strong>presencial em ${config.city}</strong> ou <strong>online</strong>?`;
+          } else {
+            liveState.lastBotIntent = "ask_area";
+            badge = "Cliente Identificado 👤";
+            reply = `Prazer em falar com você, <strong>${liveState.clientName}</strong>! 😊${liveState.modality ? " Já anotei sua preferência pelo atendimento <strong>" + liveState.modality + "</strong>." : ""}<br><br>` +
+                    `Me conta em poucas palavras: qual situação jurídica você precisa resolver hoje? (Ex: <strong>Divórcio/Pensão, INSS/Aposentadoria, Trabalhista, Inventário ou Contratos</strong>)`;
+          }
+        }
+
+        // 8. Saudação inicial ou primeira mensagem aberta sem área e sem nome ainda
+        else {
+          // Se o usuário já tinha recebido as boas-vindas e digitou algo específico que não bateu nas áreas padrão
+          if (liveState.lastBotIntent === "ask_name_and_area" && !isGreetingOnly) {
+            liveState.areaKey = "geral";
+            liveState.areaLabel = "Demanda Jurídica (" + text.slice(0, 25) + ")";
+            liveState.caseDetails.push(text);
+            liveState.lastBotIntent = "ask_name";
+            reply = `Entendi! Já anotei aqui sua necessidade sobre <em>"${text}"</em> para o(a) advogado(a) responsável.<br><br>Como posso te chamar (seu nome) e você prefere atendimento <strong>presencial aqui em ${config.city}</strong> ou <strong>online por vídeo</strong>?`;
+          } else {
+            liveState.lastBotIntent = "ask_name_and_area";
+            reply = `Olá! Seja muito bem-vindo(a) ao atendimento inteligente da <strong>${config.firmName}</strong> em ${config.city}. ⚖️<br><br>` +
+                    `Estou online para agilizar seu atendimento sem fila de espera! Para começarmos, <strong>qual é o seu nome</strong> e sobre qual assunto jurídico você gostaria de falar (ex: <strong>INSS, Trabalhista, Divórcio/Família ou Cível</strong>)?`;
+          }
+        }
+
+        addAIMessage(reply, "Agora");
+
+        // Atualiza o Painel de Triagem & CRM ao vivo a cada mensagem!
+        const crmClient = liveState.clientName || "Aguardando nome do cliente...";
+        const crmArea = liveState.areaLabel || "Identificando área jurídica...";
+        const crmUrgency = liveState.scheduledSlot
+          ? "Altíssima 🔥 (Consulta Agendada)"
+          : (liveState.areaKey ? "Alta 🔥 (Em Qualificação Ativa)" : "Atendimento Imediato (1.4s)");
+        const crmSched = liveState.scheduledSlot || (liveState.modality ? `Preferência: ${liveState.modality}` : "Em definição na conversa");
+        const crmSummary = `Cliente (${liveState.clientName || "em atendimento"}) buscando auxílio em ${liveState.areaLabel || "consulta jurídica"}. ` +
+          (liveState.caseDetails.length > 0 ? `Relato colhido pela IA: "${liveState.caseDetails.join(" | ")}". ` : `Última mensagem: "${text}". `) +
+          (liveState.scheduledSlot ? `Agendado para: ${liveState.scheduledSlot}.` : "");
+
+        updateCRM(crmClient, crmArea, crmUrgency, crmSched, crmSummary, badge);
+      }, 1100);
+    }
+
+    function sendSimulatedVoice() {
+      clearScenarioTimeouts();
+      const sampleText = "Oi pessoal da " + config.firmName + ", meu nome é Mariana. Estou precisando urgente dar entrada num divórcio amigável aqui em " + config.city + ". Vocês têm horário disponível para essa semana?";
+      addClientMessage(sampleText, "Agora", true, "0:14");
+
+      liveState.clientName = "Mariana";
+      liveState.areaKey = "familia";
+      liveState.areaLabel = "Direito de Família (Divórcio Consensual)";
+      liveState.caseDetails.push("Divórcio amigável solicitado via áudio");
+      liveState.lastBotIntent = "ask_schedule";
+
+      typingLabel.textContent = `IA da ${config.firmName} transcreveu o áudio e está respondendo...`;
+      typingIndicator.style.display = "flex";
+
+      setTimeout(() => {
+        typingIndicator.style.display = "none";
+        addAIMessage(
+          `Olá, <strong>Mariana</strong>! Acabei de ouvir o seu áudio com atenção! 🎧<br><br>` +
+          `Que ótimo que o divórcio é amigável (consensual) — assim conseguimos resolver de forma muito mais rápida aqui na <strong>${config.firmName}</strong>!<br><br>` +
+          `Temos horário disponível esta semana: <strong>Amanhã às 14h00</strong> ou <strong>Quinta-feira às 09h30</strong>. Qual fica melhor para você (presencial em ${config.city} ou online)?`,
+          "Agora"
+        );
+        updateCRM(
+          "Mariana (Via Áudio WhatsApp)",
+          "Direito de Família (Divórcio Consensual)",
+          "Alta 🔥 (Áudio Transcrito em 1.1s)",
+          "Aguardando confirmação (Amanhã 14h ou Quinta 09h30)",
+          `IA ouviu e transcreveu áudio de 14s instantaneamente: "${sampleText}". Identificou nome (Mariana) e demanda (Divórcio Amigável).`,
+          "Áudio Qualificado 🎧"
+        );
+      }, 1400);
+    }
+
+    // Inicia automaticamente no cenário 1 para impressionar logo ao abrir
+    window.onload = () => {
+      runScenario("previdenciario_audio");
+    };
+  </script>
+</body>
+</html>
